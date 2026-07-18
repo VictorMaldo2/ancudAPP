@@ -7,5 +7,8 @@ export const config = {
     "/jugadores/:path*",
     "/asistencia/:path*",
     "/nominas/:path*",
+    "/usuarios/:path*",
+    "/estadisticas/:path*",
   ],
 };
+

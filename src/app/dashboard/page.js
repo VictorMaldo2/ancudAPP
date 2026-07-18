@@ -14,14 +14,14 @@ export default async function DashboardPage() {
 
   const cards = [
     { label: "Categorías", value: categoriasRes.rows[0].count, href: "/categorias", icon: "📋" },
-    { label: "Jugadores activos", value: jugadoresRes.rows[0].count, href: "/jugadores", icon: "🏐" },
+    { label: "Jugadoras activos", value: jugadoresRes.rows[0].count, href: "/jugadores", icon: "🏐" },
     { label: "Sesiones registradas", value: sesionesRes.rows[0].count, href: "/asistencia", icon: "✅" },
   ];
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-1">
-        Hola, {session?.user?.name} 
+        Hola profe, {session?.user?.name} 
       </h1>
       <p className="text-slate-500 mb-6">
         Rol: {session?.user?.role === "ADMIN" ? "Administrador" : "Entrenador"}
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
             + Tomar asistencia
           </Link>
           <Link href="/jugadores" className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">
-            + Agregar jugador
+            + Agregar jugadora
           </Link>
           <Link href="/nominas" className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">
             🖨️ Ver nóminas

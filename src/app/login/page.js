@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,8 +37,17 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-club to-club-dark px-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8">
         <div className="text-center mb-6">
-          <div className="text-4xl mb-2">🏐</div>
-          <h1 className="text-xl font-bold text-slate-800">Mi Club de Vóleibol</h1>
+          <div className="flex items-center justify-center w-25 h-25 mx-auto mb-3 rounded-2xl bg-slate-50 border border-slate-100 p-2">
+            <Image
+              src="/logoCVA.png"
+              alt="Logo del club"
+              width={80}
+              height={80}
+              className="object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800">BIENVENIDO/A</h1>
           <p className="text-sm text-slate-500">Ingresa a tu cuenta</p>
         </div>
 

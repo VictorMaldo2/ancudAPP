@@ -1,5 +1,5 @@
 import { query } from "@/lib/db";
-import { crearSesionYRedirigir } from "@/lib/actions";
+import { crearSesionYRedirigir, eliminarSesion } from "@/lib/actions";
 import Link from "next/link";
 
 export default async function AsistenciaPage() {
@@ -82,12 +82,20 @@ export default async function AsistenciaPage() {
                       {s.presentes}/{s.total}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <Link
-                        href={`/asistencia/tomar/${s.id}`}
-                        className="text-club hover:underline text-xs font-medium"
-                      >
-                        Editar
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/asistencia/tomar/${s.id}`}
+                          className="text-club hover:underline text-xs font-medium"
+                        >
+                          Editar
+                        </Link>
+                        <form action={eliminarSesion}>
+                          <input type="hidden" name="id" value={s.id} />
+                          <button className="text-red-600 hover:underline text-xs font-medium">
+                            Eliminar
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))}

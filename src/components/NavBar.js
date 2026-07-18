@@ -1,18 +1,25 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
-const links = [
-  { href: "/dashboard", label: "Inicio", icon: "🏠" },
-  { href: "/categorias", label: "Categorías", icon: "📋" },
-  { href: "/jugadores", label: "Jugadores", icon: "🏐" },
-  { href: "/asistencia", label: "Asistencia", icon: "✅" },
-  { href: "/nominas", label: "Nóminas", icon: "🖨️" },
-];
+function getLinks(role) {
+  const base = [
+    { href: "/dashboard", label: "Inicio" },
+    { href: "/categorias", label: "Categorías" },
+    { href: "/jugadores", label: "Jugadores" },
+    { href: "/asistencia", label: "Asistencia" },
+    { href: "/estadisticas", label: "Estadísticas" },
+    { href: "/nominas", label: "Nóminas" },
+  ];
+  if (role === "ADMIN") {
+    base.push({ href: "/usuarios", label: "Usuarios" });
+  }
+  return base;
+}
 
 function getIniciales(nombre) {
   if (!nombre) return "?";
@@ -47,77 +54,56 @@ export default function NavBar() {
 
   const nombre = session.user?.name || "";
   const rol = session.user?.role === "ADMIN" ? "Administrador" : "Entrenador";
+  const links = getLinks(session.user?.role);
 
   return (
-    <nav className="no-print sticky top-0 z-50 bg-gradient-to-r from-club to-club-dark/95 backdrop-blur-md shadow-lg shadow-club-dark/10 border-b border-white/10">
+    <nav className="no-print sticky top-0 z-50 bg-gradient-to-r from-club to-club-dark backdrop-blur-md shadow-lg shadow-club-dark/10">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-24">
+        <div className="relative flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <span className="flex items-center justify-center w-15 h-15 rounded-xl bg-white/15 shadow-inner group-hover:bg-white/25 transition overflow-hidden p-1">
-  <Image
-    src="/blanco.png"
-    alt="Logo del club"
-    width={40}
-    height={40}
-    className="object-contain"
-  />
-</span>
-            <div className="leading-tight">
-              <div className="text-white font-bold text-xl tracking-tight">
-                Club voleibol Ancud
-              </div>
-              <div className="text-blue-100/70 text-sm font-medium hidden sm:block">
-                Panel de gestión
-              </div>
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+            <span className="flex items-center  rounded-lg overflow-hidden  shrink-0">
+              <Image src="/blanco.png" alt="Logo" width={60} height={60} className="object-contain" />
+            </span>
+            <span className="text-white font-semibold text-[15px] tracking-tight whitespace-nowrap">
+              
+            </span>
           </Link>
 
-          {/* Links desktop */}
-          <div className="hidden md:flex items-center gap-1 bg-black/10 rounded-full p-1">
+          {/* Links desktop - centrados */}
+          <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
             {links.map((l) => {
               const active = pathname?.startsWith(l.href);
               return (
                 <Link
-                   key={l.href}
-  href={l.href}
-  className={`relative px-4 py-2.5 rounded-full text-base font-medium transition-all duration-200 flex items-center gap-2 ${
-                    active
-                      ? "bg-white text-club-dark shadow-sm"
-                      : "text-blue-50/90 hover:bg-white/10 hover:text-white"
+                  key={l.href}
+                  href={l.href}
+                  className={`relative text-[13.5px] font-medium py-2 transition-colors whitespace-nowrap ${
+                    active ? "text-white" : "text-blue-100/80 hover:text-white"
                   }`}
                 >
-                  <span className="text-base">{l.icon}</span>
                   {l.label}
+                  {active && (
+                    <span className="absolute -bottom-[1px] left-0 right-0 h-[1.5px] bg-white rounded-full" />
+                  )}
                 </Link>
               );
             })}
           </div>
 
           {/* Usuario desktop */}
-          <div className="hidden md:block relative" ref={menuRef}>
+          <div className="hidden md:block relative shrink-0" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="flex items-center justify-center rounded-full border border-white/25 hover:border-white/40 transition p-0.5"
             >
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white text-club-dark text-xs font-bold">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-club-dark text-xs font-bold">
                 {getIniciales(nombre)}
               </span>
-              <span className="text-white text-sm font-medium max-w-[100px] truncate">
-                {nombre}
-              </span>
-              <svg
-                className={`w-3.5 h-3.5 text-white/70 transition-transform ${menuOpen ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <div className="text-sm font-semibold text-slate-800 truncate">{nombre}</div>
                   <div className="text-xs text-slate-500">{rol}</div>
@@ -137,7 +123,7 @@ export default function NavBar() {
 
           {/* Botón hamburguesa mobile */}
           <button
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 text-white"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white"
             onClick={() => setOpen(!open)}
             aria-label="Abrir menú"
           >
@@ -164,13 +150,10 @@ export default function NavBar() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`px-3.5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition ${
-                    active
-                      ? "bg-white text-club-dark"
-                      : "text-blue-50/90 hover:bg-white/10"
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                    active ? "bg-white/15 text-white" : "text-blue-100/80 hover:bg-white/10"
                   }`}
                 >
-                  <span>{l.icon}</span>
                   {l.label}
                 </Link>
               );

@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { query } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -102,4 +103,36 @@ export async function guardarAsistencia(formData) {
 
   revalidatePath("/asistencia");
   redirect("/asistencia");
+}
+
+export async function eliminarSesion(formData) {
+  const id = String(formData.get("id"));
+  await query("DELETE FROM sesiones WHERE id = $1", [id]);
+  revalidatePath("/asistencia");
+}
+
+// ---------- USUARIOS (entrenadores) ----------
+export async function crearUsuario(formData) {
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+  const password = String(formData.get("password") || "");
+  const role = String(formData.get("role") || "ENTRENADOR");
+
+  if (!name || !email || !password) return;
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  await query(
+    `INSERT INTO users (name, email, password, role)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (email) DO NOTHING`,
+    [name, email, hashed, role]
+  );
+  revalidatePath("/usuarios");
+}
+
+export async function eliminarUsuario(formData) {
+  const id = String(formData.get("id"));
+  await query("DELETE FROM users WHERE id = $1", [id]);
+  revalidatePath("/usuarios");
 }
