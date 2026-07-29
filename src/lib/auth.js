@@ -17,8 +17,10 @@ export const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const email = credentials.email.trim().toLowerCase();
+
         const { rows } = await query("SELECT * FROM users WHERE email = $1", [
-          credentials.email,
+          email,
         ]);
         const user = rows[0];
         if (!user) return null;
