@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { crearUsuario, eliminarUsuario } from "@/lib/actions";
+import ConfirmButton from "@/components/ConfirmButton";
 
 export default async function UsuariosPage() {
   const session = await getServerSession(authOptions);
@@ -80,12 +81,12 @@ export default async function UsuariosPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {u.id !== session.user.id && (
-                        <form action={eliminarUsuario}>
-                          <input type="hidden" name="id" value={u.id} />
-                          <button className="text-red-600 hover:underline text-xs">
-                            Eliminar
-                          </button>
-                        </form>
+                       <ConfirmButton
+  action={eliminarUsuario}
+  fields={{ id: u.id }}
+  className="text-red-600 hover:underline text-xs"
+  message={`¿Eliminar el usuario "${u.name}"? Ya no podrá iniciar sesión.`}
+/>
                       )}
                     </td>
                   </tr>

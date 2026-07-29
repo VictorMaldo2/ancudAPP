@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { crearCategoria, eliminarCategoria } from "@/lib/actions";
+import ConfirmButton from "@/components/ConfirmButton";
 
 export default async function CategoriasPage() {
   const { rows: categorias } = await query(`
@@ -54,7 +55,7 @@ export default async function CategoriasPage() {
                 <tr>
                   <th className="text-left px-4 py-3">Nombre</th>
                   <th className="text-left px-4 py-3 hidden sm:table-cell">Descripción</th>
-                  <th className="text-left px-4 py-3">Jugadores</th>
+                  <th className="text-left px-4 py-3">Jugadoras</th>
                   <th className="text-right px-4 py-3">Acción</th>
                 </tr>
               </thead>
@@ -67,12 +68,12 @@ export default async function CategoriasPage() {
                     </td>
                     <td className="px-4 py-3">{c.jugadores_count}</td>
                     <td className="px-4 py-3 text-right">
-                      <form action={eliminarCategoria}>
-                        <input type="hidden" name="id" value={c.id} />
-                        <button className="text-red-600 hover:underline text-xs">
-                          Eliminar
-                        </button>
-                      </form>
+                     <ConfirmButton
+  action={eliminarCategoria}
+  fields={{ id: c.id }}
+  className="text-red-600 hover:underline text-xs"
+  message={`¿Eliminar la categoría "${c.nombre}"? Se eliminarán también sus jugadoras y sesiones asociadas.`}
+/>
                     </td>
                   </tr>
                 ))}

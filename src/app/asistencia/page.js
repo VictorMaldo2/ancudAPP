@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { crearSesionYRedirigir, eliminarSesion } from "@/lib/actions";
 import Link from "next/link";
+import ConfirmButton from "@/components/ConfirmButton";
 
 export default async function AsistenciaPage() {
   const [categoriasRes, sesionesRes] = await Promise.all([
@@ -89,12 +90,12 @@ export default async function AsistenciaPage() {
                         >
                           Editar
                         </Link>
-                        <form action={eliminarSesion}>
-                          <input type="hidden" name="id" value={s.id} />
-                          <button className="text-red-600 hover:underline text-xs font-medium">
-                            Eliminar
-                          </button>
-                        </form>
+                        <ConfirmButton
+  action={eliminarSesion}
+  fields={{ id: s.id }}
+  className="text-red-600 hover:underline text-xs font-medium"
+  message="¿Eliminar esta sesión? Se perderá también la asistencia registrada en ella."
+/>
                       </div>
                     </td>
                   </tr>

@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { crearJugador, eliminarJugador, toggleJugadorActivo, editarJugador } from "@/lib/actions";
+import ConfirmButton from "@/components/ConfirmButton";
 
 function toInputDate(fecha) {
   if (!fecha) return "";
@@ -177,12 +178,12 @@ export default async function JugadoresPage() {
                       </form>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <form action={eliminarJugador}>
-                        <input type="hidden" name="id" value={j.id} />
-                        <button className="text-red-600 hover:underline text-xs">
-                          Eliminar
-                        </button>
-                      </form>
+                     <ConfirmButton
+  action={eliminarJugador}
+  fields={{ id: j.id }}
+  className="text-red-600 hover:underline text-xs"
+  message={`¿Eliminar a ${j.nombre} ${j.apellido}? Se eliminará también su historial de asistencia.`}
+/>
                     </td>
                   </tr>
                 ))}
