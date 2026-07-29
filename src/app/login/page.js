@@ -39,7 +39,7 @@ export default function LoginPage() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center w-25 h-25 mx-auto mb-3 rounded-2xl bg-slate-50 border border-slate-100 p-2">
             <Image
-              src="/logoCVA.png"
+              src="/LogoCVA.png"
               alt="Logo del club"
               width={80}
               height={80}
