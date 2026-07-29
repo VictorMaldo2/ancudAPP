@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import ListadoViaje from "@/components/Listadoviaje";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function ViajeCategoriaPage({ params }) {
   const { rows: categoriaRows } = await query(
     "SELECT * FROM categorias WHERE id = $1",

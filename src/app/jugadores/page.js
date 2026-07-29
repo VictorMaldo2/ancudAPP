@@ -2,6 +2,8 @@ import { query } from "@/lib/db";
 import { crearJugador, eliminarJugador, toggleJugadorActivo, editarJugador } from "@/lib/actions";
 import ConfirmButton from "@/components/ConfirmButton";
 
+export const dynamic = "force-dynamic";
+
 function toInputDate(fecha) {
   if (!fecha) return "";
   const d = new Date(fecha);

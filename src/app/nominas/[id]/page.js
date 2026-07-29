@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import PrintButton from "@/components/PrintButton";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 function edad(fechaNacimiento) {
   if (!fechaNacimiento) return "—";
   const fecha = new Date(fechaNacimiento);

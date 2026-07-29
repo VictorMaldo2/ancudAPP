@@ -4,6 +4,8 @@ import { query } from "@/lib/db";
 import { crearUsuario, eliminarUsuario } from "@/lib/actions";
 import ConfirmButton from "@/components/ConfirmButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function UsuariosPage() {
   const session = await getServerSession(authOptions);
 

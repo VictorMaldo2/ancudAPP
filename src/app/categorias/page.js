@@ -2,6 +2,8 @@ import { query } from "@/lib/db";
 import { crearCategoria, eliminarCategoria } from "@/lib/actions";
 import ConfirmButton from "@/components/ConfirmButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriasPage() {
   const { rows: categorias } = await query(`
     SELECT c.*, COUNT(j.id)::int AS jugadores_count

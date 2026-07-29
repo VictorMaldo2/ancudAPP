@@ -1,6 +1,8 @@
 import { query } from "@/lib/db";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 function pct(presentes, total) {
   if (!total) return 0;
   return Math.round((presentes / total) * 1000) / 10;

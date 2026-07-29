@@ -3,6 +3,8 @@ import { crearSesionYRedirigir, eliminarSesion } from "@/lib/actions";
 import Link from "next/link";
 import ConfirmButton from "@/components/ConfirmButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AsistenciaPage() {
   const [categoriasRes, sesionesRes] = await Promise.all([
     query("SELECT * FROM categorias ORDER BY nombre ASC"),

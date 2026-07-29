@@ -2,6 +2,8 @@ import { query } from "@/lib/db";
 import { guardarAsistencia } from "@/lib/actions";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function TomarAsistenciaPage({ params }) {
   const { rows: sesionRows } = await query(
     `SELECT s.*, c.nombre AS categoria_nombre
