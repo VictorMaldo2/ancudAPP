@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { crearUsuario, eliminarUsuario } from "@/lib/actions";
 import ConfirmButton from "@/components/ConfirmButton";
+import PasswordInput from "@/components/PasswordInput";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +42,9 @@ export default async function UsuariosPage() {
                 <input name="email" type="email" required className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-club" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña *</label>
-                <input name="password" type="password" required minLength={6} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-club" />
-              </div>
+  <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña *</label>
+  <PasswordInput name="password" required minLength={6} />
+</div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Rol *</label>
                 <select name="role" required className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-club">
