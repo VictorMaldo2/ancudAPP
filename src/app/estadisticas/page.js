@@ -12,6 +12,18 @@ function colorBarra(p) {
   return "bg-red-500";
 }
 
+function labelMes(mesKey) {
+  // mesKey viene como "YYYY-MM"
+  const [anio, mes] = mesKey.split("-");
+  const fecha = new Date(Date.UTC(Number(anio), Number(mes) - 1, 1));
+  const texto = fecha.toLocaleDateString("es-CL", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 export default async function EstadisticasPage({ searchParams }) {
   const { rows: categorias } = await query(
     "SELECT * FROM categorias ORDER BY nombre ASC"
@@ -30,8 +42,9 @@ export default async function EstadisticasPage({ searchParams }) {
 
   const categoriaId = searchParams?.categoria || categorias[0].id;
   const categoriaActual = categorias.find((c) => c.id === categoriaId) || categorias[0];
+  const mesSeleccionado = searchParams?.mes || null;
 
-  // Resumen general por categoría (para las tarjetas de arriba)
+  // Resumen general por categoría (tarjetas de arriba)
   const { rows: resumenCategorias } = await query(`
     SELECT c.id, c.nombre,
       COUNT(a.id)::int AS total_registros,
@@ -43,7 +56,22 @@ export default async function EstadisticasPage({ searchParams }) {
     ORDER BY c.nombre ASC
   `);
 
-  // Ranking de jugadoras de la categoría seleccionada
+  // Resumen por mes de la categoría seleccionada (siempre muestra todos los meses)
+  const { rows: meses } = await query(
+    `
+    SELECT to_char(s.fecha, 'YYYY-MM') AS mes_key,
+      COUNT(a.id)::int AS total,
+      COUNT(a.id) FILTER (WHERE a.presente)::int AS presentes
+    FROM sesiones s
+    LEFT JOIN asistencias a ON a.sesion_id = s.id
+    WHERE s.categoria_id = $1
+    GROUP BY mes_key
+    ORDER BY mes_key ASC
+    `,
+    [categoriaActual.id]
+  );
+
+  // Ranking de jugadoras (filtrado por mes si hay uno seleccionado)
   const { rows: jugadoras } = await query(
     `
     SELECT j.id, j.nombre, j.apellido,
@@ -53,18 +81,20 @@ export default async function EstadisticasPage({ searchParams }) {
       COUNT(a.id) FILTER (WHERE a.presente = false AND NOT a.justificado)::int AS injustificadas
     FROM jugadores j
     LEFT JOIN asistencias a ON a.jugador_id = j.id
+    LEFT JOIN sesiones s ON s.id = a.sesion_id
     WHERE j.categoria_id = $1 AND j.activo = true
+      AND (s.id IS NULL OR $2::text IS NULL OR to_char(s.fecha, 'YYYY-MM') = $2)
     GROUP BY j.id, j.nombre, j.apellido
     ORDER BY j.apellido ASC
     `,
-    [categoriaActual.id]
+    [categoriaActual.id, mesSeleccionado]
   );
 
   const jugadorasOrdenadas = [...jugadoras].sort(
     (a, b) => pct(a.presentes, a.total) - pct(b.presentes, b.total)
   );
 
-  // Evolución sesión por sesión de la categoría seleccionada
+  // Evolución por sesión (filtrada por mes si hay uno seleccionado)
   const { rows: sesiones } = await query(
     `
     SELECT s.id, s.fecha,
@@ -73,10 +103,11 @@ export default async function EstadisticasPage({ searchParams }) {
     FROM sesiones s
     LEFT JOIN asistencias a ON a.sesion_id = s.id
     WHERE s.categoria_id = $1
+      AND ($2::text IS NULL OR to_char(s.fecha, 'YYYY-MM') = $2)
     GROUP BY s.id, s.fecha
     ORDER BY s.fecha ASC
     `,
-    [categoriaActual.id]
+    [categoriaActual.id, mesSeleccionado]
   );
 
   const totalCategoriaActual = resumenCategorias.find((c) => c.id === categoriaActual.id);
@@ -119,16 +150,89 @@ export default async function EstadisticasPage({ searchParams }) {
         })}
       </div>
 
-      <h2 className="text-lg font-bold mb-1">{categoriaActual.nombre}</h2>
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+        <h2 className="text-lg font-bold">{categoriaActual.nombre}</h2>
+        {mesSeleccionado && (
+          <Link
+            href={`/estadisticas?categoria=${categoriaActual.id}`}
+            className="text-xs font-medium text-club hover:underline flex items-center gap-1"
+          >
+            ✕ Quitar filtro de {labelMes(mesSeleccionado)}
+          </Link>
+        )}
+      </div>
       <p className="text-slate-500 text-sm mb-6">
-        Asistencia general: <span className="font-semibold text-slate-700">{pctCategoriaActual}%</span>
+        Asistencia {mesSeleccionado ? `en ${labelMes(mesSeleccionado)}` : "general"}:{" "}
+        <span className="font-semibold text-slate-700">
+          {pct(
+            sesiones.reduce((acc, s) => acc + s.presentes, 0),
+            sesiones.reduce((acc, s) => acc + s.total, 0)
+          )}
+          %
+        </span>
       </p>
+
+      {/* Asistencia por mes */}
+      <div className="bg-white rounded-xl shadow border border-slate-100 overflow-hidden mb-6">
+        <div className="px-4 py-3 border-b border-slate-100 font-semibold text-sm text-slate-600">
+          Asistencia por mes
+        </div>
+        <div className="p-4">
+          {meses.length === 0 ? (
+            <p className="text-sm text-slate-400 text-center py-4">
+              Aún no hay sesiones registradas en esta categoría.
+            </p>
+          ) : (
+            <div className="flex items-end gap-3 h-40 overflow-x-auto pb-2">
+              {meses.map((m) => {
+                const p = pct(m.presentes, m.total);
+                const activo = m.mes_key === mesSeleccionado;
+                return (
+                  <Link
+                    key={m.mes_key}
+                    href={
+                      activo
+                        ? `/estadisticas?categoria=${categoriaActual.id}`
+                        : `/estadisticas?categoria=${categoriaActual.id}&mes=${m.mes_key}`
+                    }
+                    className="flex flex-col items-center justify-end h-full min-w-[52px] group"
+                  >
+                    <span
+                      className={`text-[11px] mb-1 font-medium ${
+                        activo ? "text-club" : "text-slate-500"
+                      }`}
+                    >
+                      {p}%
+                    </span>
+                    <div
+                      className={`w-8 rounded-t-md transition-all ${
+                        activo ? "bg-club" : `${colorBarra(p)} group-hover:opacity-80`
+                      }`}
+                      style={{ height: `${Math.max(p, 4)}%` }}
+                    />
+                    <span
+                      className={`text-[11px] mt-1.5 ${
+                        activo ? "text-club font-semibold" : "text-slate-400"
+                      }`}
+                    >
+                      {labelMes(m.mes_key)}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Ranking de jugadoras */}
         <div className="bg-white rounded-xl shadow border border-slate-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 font-semibold text-sm text-slate-600">
             Asistencia por jugadora (menor a mayor)
+            {mesSeleccionado && (
+              <span className="text-club font-normal"> · {labelMes(mesSeleccionado)}</span>
+            )}
           </div>
           <div className="p-4 flex flex-col gap-3">
             {jugadorasOrdenadas.map((j) => {
@@ -169,11 +273,14 @@ export default async function EstadisticasPage({ searchParams }) {
         <div className="bg-white rounded-xl shadow border border-slate-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 font-semibold text-sm text-slate-600">
             Evolución por sesión
+            {mesSeleccionado && (
+              <span className="text-club font-normal"> · {labelMes(mesSeleccionado)}</span>
+            )}
           </div>
           <div className="p-4">
             {sesiones.length === 0 ? (
               <p className="text-sm text-slate-400 text-center py-4">
-                Aún no hay sesiones registradas en esta categoría.
+                No hay sesiones registradas {mesSeleccionado ? "en este mes" : "en esta categoría"}.
               </p>
             ) : (
               <div className="flex items-end gap-2 h-48 overflow-x-auto pb-2">
@@ -190,7 +297,7 @@ export default async function EstadisticasPage({ searchParams }) {
                         className={`w-6 rounded-t-md ${colorBarra(p)}`}
                         style={{ height: `${Math.max(p, 3)}%` }}
                       />
-                      <span className="text-[10px] text-slate-400 mt-1 rotate-0">
+                      <span className="text-[10px] text-slate-400 mt-1">
                         {new Date(s.fecha).toLocaleDateString("es-CL", {
                           day: "2-digit",
                           month: "2-digit",

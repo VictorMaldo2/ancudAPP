@@ -57,35 +57,40 @@ export default function NavBar() {
   const links = getLinks(session.user?.role);
 
   return (
-    <nav className="no-print sticky top-0 z-50 bg-gradient-to-r from-club to-club-dark backdrop-blur-md shadow-lg shadow-club-dark/10">
+    <nav className="no-print sticky top-0 z-50 bg-gradient-to-r from-club to-club-dark backdrop-blur-md shadow-lg shadow-club-dark/10 origin-top transition-transform duration-300 ease-out hover:scale-[1.03] hover:shadow-xl hover:shadow-club-dark/20">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="relative flex items-center justify-between h-16">
+        <div className="relative flex items-center justify-between h-22">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
-            <span className="flex items-center  rounded-lg overflow-hidden  shrink-0">
-              <Image src="/blanco.png" alt="Logo" width={60} height={60} className="object-contain" />
+          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
+            <span className="flex items-center justify-center w-20 h-20 shrink-0 transition-transform duration-200 ease-out group-hover:scale-110">
+              <Image src="/blanco.png" alt="Logo" width={80} height={80} className="object-contain" />
             </span>
+            
             <span className="text-white font-semibold text-[15px] tracking-tight whitespace-nowrap">
-              
+            
             </span>
           </Link>
 
-          {/* Links desktop - centrados */}
-          <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
+          {/* Links desktop - centrados, con animación de escala */}
+          <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
             {links.map((l) => {
               const active = pathname?.startsWith(l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`relative text-[13.5px] font-medium py-2 transition-colors whitespace-nowrap ${
-                    active ? "text-white" : "text-blue-100/80 hover:text-white"
-                  }`}
+                  className={`relative px-3 py-2 text-[15.5px] font-medium whitespace-nowrap rounded-lg
+                    transition-all duration-200 ease-out
+                    hover:scale-110 hover:-translate-y-0.5
+                    ${active ? "text-white" : "text-blue-100/80 hover:text-white"}`}
                 >
                   {l.label}
-                  {active && (
-                    <span className="absolute -bottom-[1px] left-0 right-0 h-[1.5px] bg-white rounded-full" />
-                  )}
+                  <span
+                    className={`absolute -bottom-[3px] left-3 right-3 h-[1.5px] bg-white rounded-full origin-center
+                      transition-transform duration-200 ease-out
+                      ${active ? "scale-x-100" : "scale-x-0"}
+                      group-hover:scale-x-100`}
+                  />
                 </Link>
               );
             })}
@@ -95,7 +100,7 @@ export default function NavBar() {
           <div className="hidden md:block relative shrink-0" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center justify-center rounded-full border border-white/25 hover:border-white/40 transition p-0.5"
+              className="flex items-center justify-center rounded-full border border-white/25 hover:border-white/40 transition-all duration-200 ease-out p-0.5 hover:scale-110"
             >
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-club-dark text-xs font-bold">
                 {getIniciales(nombre)}
@@ -103,7 +108,7 @@ export default function NavBar() {
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden animate-[fadeIn_0.15s_ease-out]">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <div className="text-sm font-semibold text-slate-800 truncate">{nombre}</div>
                   <div className="text-xs text-slate-500">{rol}</div>
@@ -123,7 +128,7 @@ export default function NavBar() {
 
           {/* Botón hamburguesa mobile */}
           <button
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-white transition-transform duration-200 hover:scale-110"
             onClick={() => setOpen(!open)}
             aria-label="Abrir menú"
           >

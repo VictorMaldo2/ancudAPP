@@ -1,5 +1,14 @@
 import { query } from "@/lib/db";
-import { crearJugador, eliminarJugador, toggleJugadorActivo } from "@/lib/actions";
+import { crearJugador, eliminarJugador, toggleJugadorActivo, editarJugador } from "@/lib/actions";
+
+function toInputDate(fecha) {
+  if (!fecha) return "";
+  const d = new Date(fecha);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export default async function JugadoresPage() {
   const [jugadoresRes, categoriasRes] = await Promise.all([
@@ -94,7 +103,7 @@ export default async function JugadoresPage() {
 
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow border border-slate-100 overflow-x-auto">
-            <table className="w-full text-sm min-w-[600px]">
+            <table className="w-full text-sm min-w-[650px]">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <th className="text-left px-4 py-3">Jugador</th>
@@ -106,12 +115,50 @@ export default async function JugadoresPage() {
               </thead>
               <tbody>
                 {jugadores.map((j) => (
-                  <tr key={j.id} className="border-t border-slate-100">
+                  <tr key={j.id} className="border-t border-slate-100 align-top">
                     <td className="px-4 py-3 font-medium">
                       {j.apellido}, {j.nombre}
                       {j.numero_camiseta != null && (
                         <span className="text-slate-400"> #{j.numero_camiseta}</span>
                       )}
+                      <details className="mt-1.5">
+                        <summary className="text-club cursor-pointer hover:underline select-none text-xs font-normal">
+                          Editar datos
+                        </summary>
+                        <form
+                          action={editarJugador}
+                          className="mt-2 flex flex-col gap-2 border border-slate-200 rounded-lg p-3 bg-slate-50 max-w-xs"
+                        >
+                          <input type="hidden" name="id" value={j.id} />
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <input name="nombre" defaultValue={j.nombre} required placeholder="Nombre" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+                            <input name="apellido" defaultValue={j.apellido} required placeholder="Apellido" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+                          </div>
+
+                          <select name="categoriaId" defaultValue={j.categoria_id} required className="border border-slate-300 rounded px-2 py-1.5 text-xs">
+                            {categorias.map((c) => (
+                              <option key={c.id} value={c.id}>{c.nombre}</option>
+                            ))}
+                          </select>
+
+                          <input name="rut" defaultValue={j.rut || ""} placeholder="RUT" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+
+                          <input name="fechaNacimiento" type="date" defaultValue={toInputDate(j.fecha_nacimiento)} className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <input name="posicion" defaultValue={j.posicion || ""} placeholder="Posición" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+                            <input name="numeroCamiseta" type="number" defaultValue={j.numero_camiseta ?? ""} placeholder="N° camiseta" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+                          </div>
+
+                          <input name="telefono" defaultValue={j.telefono || ""} placeholder="Teléfono" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+                          <input name="email" type="email" defaultValue={j.email || ""} placeholder="Email" className="border border-slate-300 rounded px-2 py-1.5 text-xs" />
+
+                          <button className="mt-1 bg-club hover:bg-club-dark text-white rounded px-2 py-1.5 text-xs font-medium">
+                            Guardar cambios
+                          </button>
+                        </form>
+                      </details>
                     </td>
                     <td className="px-4 py-3">{j.categoria_nombre}</td>
                     <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{j.rut || "—"}</td>

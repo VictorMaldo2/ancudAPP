@@ -2,6 +2,8 @@
 
 import bcrypt from "bcryptjs";
 import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -57,6 +59,41 @@ export async function crearJugador(formData) {
   revalidatePath("/jugadores");
 }
 
+export async function editarJugador(formData) {
+  const id = String(formData.get("id"));
+  const nombre = String(formData.get("nombre") || "").trim();
+  const apellido = String(formData.get("apellido") || "").trim();
+  const rut = String(formData.get("rut") || "").trim();
+  const categoriaId = String(formData.get("categoriaId") || "");
+  const telefono = String(formData.get("telefono") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  const posicion = String(formData.get("posicion") || "").trim();
+  const numeroCamisetaRaw = String(formData.get("numeroCamiseta") || "").trim();
+  const fechaNacimientoRaw = String(formData.get("fechaNacimiento") || "").trim();
+
+  if (!id || !nombre || !apellido || !categoriaId) return;
+
+  await query(
+    `UPDATE jugadores SET
+      nombre = $1, apellido = $2, rut = $3, categoria_id = $4,
+      telefono = $5, email = $6, posicion = $7, numero_camiseta = $8, fecha_nacimiento = $9
+     WHERE id = $10`,
+    [
+      nombre,
+      apellido,
+      rut || null,
+      categoriaId,
+      telefono || null,
+      email || null,
+      posicion || null,
+      numeroCamisetaRaw ? parseInt(numeroCamisetaRaw, 10) : null,
+      fechaNacimientoRaw || null,
+      id,
+    ]
+  );
+  revalidatePath("/jugadores");
+}
+
 export async function eliminarJugador(formData) {
   const id = String(formData.get("id"));
   await query("DELETE FROM jugadores WHERE id = $1", [id]);
@@ -75,9 +112,12 @@ export async function crearSesionYRedirigir(formData) {
   const fecha = String(formData.get("fecha") || "");
   if (!categoriaId || !fecha) return;
 
+  const session = await getServerSession(authOptions);
+  const usuarioId = session?.user?.id || null;
+
   const { rows } = await query(
-    "INSERT INTO sesiones (categoria_id, fecha) VALUES ($1, $2) RETURNING id",
-    [categoriaId, fecha]
+    "INSERT INTO sesiones (categoria_id, fecha, creado_por) VALUES ($1, $2, $3) RETURNING id",
+    [categoriaId, fecha, usuarioId]
   );
 
   redirect(`/asistencia/tomar/${rows[0].id}`);

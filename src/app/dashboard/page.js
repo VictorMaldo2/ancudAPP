@@ -9,19 +9,19 @@ export default async function DashboardPage() {
   const [categoriasRes, jugadoresRes, sesionesRes] = await Promise.all([
     query("SELECT COUNT(*) FROM categorias"),
     query("SELECT COUNT(*) FROM jugadores WHERE activo = true"),
-    query("SELECT COUNT(*) FROM sesiones"),
+    query("SELECT COUNT(*) FROM sesiones WHERE creado_por = $1", [session?.user?.id]),
   ]);
 
   const cards = [
     { label: "Categorías", value: categoriasRes.rows[0].count, href: "/categorias", icon: "📋" },
-    { label: "Jugadoras activos", value: jugadoresRes.rows[0].count, href: "/jugadores", icon: "🏐" },
-    { label: "Sesiones registradas", value: sesionesRes.rows[0].count, href: "/asistencia", icon: "✅" },
+    { label: "Jugadoras activas", value: jugadoresRes.rows[0].count, href: "/jugadores", icon: "🏐" },
+    { label: "Mis sesiones registradas", value: sesionesRes.rows[0].count, href: "/asistencia", icon: "✅" },
   ];
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-1">
-        Hola profe, {session?.user?.name} 
+        Hola, {session?.user?.name} 👋
       </h1>
       <p className="text-slate-500 mb-6">
         Rol: {session?.user?.role === "ADMIN" ? "Administrador" : "Entrenador"}
